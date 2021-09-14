@@ -23,7 +23,7 @@ app.get('/search',(req,res)=>{
         
         $('a').each((index, element)=>{
             const $element = $(element).attr('href')
-            if($element[0]==='h' && $element != null)
+            if($element != null && $element[0]==='h')
                 searchResults.push($element)
         })
         
