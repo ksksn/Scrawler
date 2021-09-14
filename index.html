@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <!-- Sigma core -->
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/sigma.core.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/conrad.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/utils/sigma.utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/utils/sigma.polyfills.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/sigma.settings.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/classes/sigma.classes.dispatcher.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/classes/sigma.classes.configurable.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/classes/sigma.classes.graph.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/classes/sigma.classes.camera.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/classes/sigma.classes.quad.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/classes/sigma.classes.edgequad.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/captors/sigma.captors.mouse.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/captors/sigma.captors.touch.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/renderers/sigma.renderers.canvas.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/renderers/sigma.renderers.webgl.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/renderers/sigma.renderers.svg.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/renderers/sigma.renderers.def.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/renderers/canvas/sigma.canvas.labels.def.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/renderers/canvas/sigma.canvas.hovers.def.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/renderers/canvas/sigma.canvas.nodes.def.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/renderers/canvas/sigma.canvas.edges.def.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/renderers/canvas/sigma.canvas.edges.curve.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/renderers/canvas/sigma.canvas.edges.arrow.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/renderers/canvas/sigma.canvas.edges.curvedArrow.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/renderers/canvas/sigma.canvas.edgehovers.def.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/renderers/canvas/sigma.canvas.edgehovers.curve.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/renderers/canvas/sigma.canvas.edgehovers.arrow.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/renderers/canvas/sigma.canvas.edgehovers.curvedArrow.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/renderers/canvas/sigma.canvas.extremities.def.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/middlewares/sigma.middlewares.rescale.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/middlewares/sigma.middlewares.copy.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/misc/sigma.misc.animation.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/misc/sigma.misc.bindEvents.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/misc/sigma.misc.bindDOMEvents.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/src/misc/sigma.misc.drawHovers.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sigma@1.2.1/plugins/sigma.plugins.dragNodes/sigma.plugins.dragNodes.js"></script>
+
+    <style>
+       #container{display: block;top: 0; bottom: 0; right: 0; left: 0;overflow: auto;height: auto;}
+       #result {top: 0; bottom: 0; right: 0; left: 0;height: 94vh;}
+       #searchbar{top: 0; bottom: 0; right: 0; left: 0;}
+    </style>
+    <title>Scrawler</title>
+</head>
+<body>
+    <div id="container">
+        <div id="searchbar">
+            <input id="search" type="text" placeholder="https://www.google.com">
+            <button id="submit">Submit</button>
+        </div>
+        <br>
+        <div id="result" class="container"></div>
+    </div>
+    
+    <script>
+
+        $(()=>{
+
+            $('#submit').on('click',()=>{
+                var search = $('#search').val()
+                $('#result').empty()
+                $.get('/search',search,(data)=>{
+                    
+                    var i=1,s,
+                        g = {
+                            nodes: [{
+                                "id": "n0",
+                                "label": search,
+                                "x": 0.4,
+                                "y": 0.4,
+                                "size": 3,
+                                "color": "#666"
+                            }],
+                            edges: []
+                        },
+                        N = data.length
+
+                    data.forEach(element => {
+                        
+                        g.nodes.push({
+                            id: 'n' + i,
+                            label: element,
+                            x: Math.random(),
+                            y: Math.random(),
+                            size: 3,
+                            color: '#666'
+                        });
+
+                        g.edges.push({
+                            id: 'e' + i,
+                            source: 'n0',
+                            target: 'n' + i,
+                            size: 2,
+                            color: '#ccc'
+                        });
+                        i++
+                        
+                    });
+
+
+                            var s = new sigma(
+                                    {
+                                        renderer: {
+                                        container: document.getElementById('result'),
+                                        type: 'canvas'
+                                        },
+                                        settings: {
+                                        minEdgeSize: 0.1,
+                                        maxEdgeSize: 2,
+                                        minNodeSize: 1,
+                                        maxNodeSize: 8,
+                                        }
+                                    }
+                            );
+
+                            s.graph.read(g);
+
+                            // Initialize the dragNodes plugin:
+                            var dragListener = sigma.plugins.dragNodes(s, s.renderers[0]);
+
+                            dragListener.bind('startdrag', function(event) {
+                            
+                            });
+                            dragListener.bind('drag', function(event) {
+                            
+                            });
+                            dragListener.bind('drop', function(event) {
+                            
+                            });
+                            dragListener.bind('dragend', function(event) {
+                            
+                            });
+
+                            s.refresh();
+                })
+            
+            })
+
+        })
+    </script>
+
+</body>
+</html>
